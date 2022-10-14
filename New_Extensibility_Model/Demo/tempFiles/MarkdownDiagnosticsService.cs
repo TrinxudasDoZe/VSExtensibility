@@ -26,7 +26,6 @@ internal class MarkdownDiagnosticsService : DisposableObject
 	private readonly VisualStudioExtensibility extensibility;
 #pragma warning restore CA2213 // Disposable fields should be disposed
 
-	private OutputWindow? outputWindow;
 	private DiagnosticsReporter? diagnosticsReporter;
 	private Dictionary<Uri, CancellationTokenSource> documentCancellationTokens;
 	private Task initializationTask;
@@ -78,10 +77,6 @@ internal class MarkdownDiagnosticsService : DisposableObject
 		}
 		catch (InvalidOperationException)
 		{
-			if (this.outputWindow is object)
-			{
-				await this.outputWindow.Writer.WriteLineAsync(Strings.MissingLinterError);
-			}
 		}
 	}
 
@@ -140,7 +135,6 @@ internal class MarkdownDiagnosticsService : DisposableObject
 
 		if (isDisposing)
 		{
-			this.outputWindow?.Dispose();
 			this.diagnosticsReporter?.Dispose();
 		}
 	}
@@ -164,19 +158,12 @@ internal class MarkdownDiagnosticsService : DisposableObject
 		}
 		catch (InvalidOperationException)
 		{
-			if (this.outputWindow is object)
-			{
-				await this.outputWindow.Writer.WriteLineAsync(Strings.MissingLinterError);
-			}
 		}
 	}
 
 	private async Task InitializeAsync()
 	{
-		this.outputWindow = await this.extensibility.Views().Output.GetChannelAsync(nameof(MarkdownLinterExtension) + Guid.NewGuid(), nameof(Strings.MarkdownLinterWindowName), default);
-		Assumes.NotNull(this.outputWindow);
-
-		this.diagnosticsReporter = this.extensibility.Languages().GetDiagnosticsReporter(nameof(MarkdownLinterExtension));
+		this.diagnosticsReporter = this.extensibility.Languages().GetDiagnosticsReporter("MarkdownLinterExtension");
 		Assumes.NotNull(this.diagnosticsReporter);
 	}
 }

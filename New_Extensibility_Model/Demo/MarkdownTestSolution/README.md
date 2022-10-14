@@ -1,0 +1,1 @@
+﻿A markdown file with a very long line is both not readable and also always causes warnings.
